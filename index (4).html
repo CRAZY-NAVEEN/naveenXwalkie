@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>NAVEEN X WALKIE</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#07080D;color:#fff;font-family:'Geist',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:10px}
+.bg{position:fixed;inset:0;z-index:-1;background:#07080D}.orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5}.o1{width:380px;height:380px;background:radial-gradient(circle,#D4FF00 0%,transparent 70%);top:-80px;left:-80px}.o2{width:340px;height:340px;background:radial-gradient(circle,#8B5CF6 0%,transparent 70%);bottom:-80px;right:-100px}
+header{width:100%;max-width:400px;display:flex;justify-content:space-between;align-items:center;padding:12px 4px}
+.logo{font-weight:800;font-size:13px;display:flex;gap:8px;align-items:center}.logo i{width:26px;height:26px;background:#D4FF00;color:#000;display:grid;place-items:center;border-radius:8px;font-style:normal;font-weight:800}
+.badge{font-family:'JetBrains Mono';font-size:9px;padding:6px 12px;border-radius:100px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:#aaa;display:flex;gap:6px;align-items:center}
+.dot{width:6px;height:6px;border-radius:50%;background:#333}.dot.on{background:#D4FF00;box-shadow:0 0 8px #D4FF00}
+.wrap{width:100%;max-width:400px;display:flex;flex-direction:column;gap:10px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:12px;backdrop-filter:blur(20px)}
+.codeRow{display:flex;justify-content:space-between;align-items:center}
+.myCode{font-family:'JetBrains Mono';font-size:28px;letter-spacing:8px;font-weight:800;color:#D4FF00}
+.qr{background:#fff;padding:4px;border-radius:10px;flex-shrink:0}
+.inpRow{display:flex;gap:8px;margin-top:10px}
+.inp{flex:1;min-width:0;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:11px;text-align:center;font-family:'JetBrains Mono';font-size:17px;letter-spacing:6px;color:#fff;outline:none}
+.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;font-size:12px;cursor:pointer;flex-shrink:0;white-space:nowrap}
+.btn-join{background:#fff;color:#000}.btn-gen{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.12)}
+
+/* VIDEO CLEAN */
+.stage{position:relative;width:100%;height:480px;background:#000;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+#remoteVideo{width:100%;height:100%;object-fit:cover;background:#0a0a0a}
+.place{position:absolute;inset:0;display:grid;place-items:center;background:#000;z-index:1}
+.place span{font-family:'JetBrains Mono';font-size:11px;color:#444}
+.topBar{position:absolute;top:8px;left:8px;right:8px;z-index:3;display:flex;justify-content:space-between;align-items:center}
+.liveTag{background:rgba(0,0,0,.6);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);padding:5px 10px;border-radius:100px;font-family:'JetBrains Mono';font-size:10px;color:#aaa;display:flex;gap:6px;align-items:center}
+.sideCtrl{display:flex;gap:6px}
+.sBtn{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.5);backdrop-filter:blur(10px);display:grid;place-items:center;cursor:pointer;font-size:14px;transition:.2s}
+.sBtn.off{background:rgba(255,46,99,.3);border-color:#FF2E63}
+.sBtn.on{background:rgba(212,255,0,.2);border-color:#D4FF00}
+
+.localFloat{position:absolute;bottom:10px;right:10px;width:88px;height:118px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.9);box-shadow:0 8px 20px rgba(0,0,0,.6);z-index:3;background:#000}
+.localFloat video{width:100%;height:100%;object-fit:cover}
+.miniLabel{position:absolute;bottom:2px;left:2px;background:#D4FF00;color:#000;font-family:'JetBrains Mono';font-size:6px;padding:2px 5px;border-radius:100px;font-weight:700}
+
+.chatWrap{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:8px}
+.chat{height:110px;overflow:auto;display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.msg{font-family:'JetBrains Mono';font-size:14px;line-height:1.35} /* BIG FONT YOU ASKED */
+.msg.me{color:#fff}.msg.peer{color:#D4FF00}.msg.sys{color:#666;font-size:11px}
+.chatBar{display:flex;gap:8px}
+.chatBar input{flex:1;min-width:0;background:#000;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 12px;font-family:'JetBrains Mono';font-size:14px;color:#fff;outline:none}
+.chatBar button{padding:10px 14px;border-radius:10px;border:0;background:#D4FF00;color:#000;font-weight:800;font-size:13px;cursor:pointer}
+.err{font-family:'JetBrains Mono';font-size:11px;background:#FF2E6320;border:1px solid #FF2E63;color:#FF2E63;padding:8px;border-radius:10px;text-align:center;display:none;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="bg"><div class="orb o1"></div><div class="orb o2"></div></div>
+<header><div class="logo"><i>N</i> NAVEEN X WALKIE</div><div class="badge"><span class="dot" id="dot"></span><span id="stat">OFFLINE</span></div></header>
+<div class="wrap">
+<div class="card">
+<div class="codeRow"><div><div style="font-family:'JetBrains Mono';font-size:8px;color:#666;letter-spacing:1px">YOUR CODE</div><div class="myCode" id="myId">------</div></div><div class="qr"><div id="qr"></div></div></div>
+<div class="inpRow"><input id="targetId" class="inp" maxlength="6" placeholder="000000" inputmode="numeric"><button class="btn btn-join" onclick="connectPeer()">Connect</button><button class="btn btn-gen" onclick="newCode()">New</button></div>
+<div class="err" id="err"></div>
+</div>
+
+<div class="stage">
+<div class="place" id="place"><span>● Waiting for peer</span></div>
+<video id="remoteVideo" autoplay playsinline></video>
+<div class="topBar">
+<div class="liveTag"><span class="dot" id="rDot"></span><span id="rLabel">Waiting</span></div>
+<div class="sideCtrl">
+<button class="sBtn on" id="micBtn" onclick="toggleMic()">🎤</button>
+<button class="sBtn on" id="camBtn" onclick="toggleCam()">📷</button>
+</div>
+</div>
+<div class="localFloat"><video id="localVideo" autoplay muted playsinline></video><div class="miniLabel">YOU</div></div>
+</div>
+
+<div class="chatWrap">
+<div class="chat" id="chatBox"><div class="msg sys">> Ready</div></div>
+<div class="chatBar"><input id="chatInput" placeholder="Type message..." onkeypress="if(event.key==='Enter')sendMsg()"><button onclick="sendMsg()">Send</button></div>
+</div>
+</div>
+
+<script>
+let peer,conn,localStream,myCode,micOn=false,camOn=true;
+const ICE={iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"turn:openrelay.metered.ca:80",username:"openrelayproject",credential:"openrelayproject"},{urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},{urls:"turn:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"}]};
+function log(t,c='sys'){const b=document.getElementById('chatBox');b.innerHTML+=`<div class="msg ${c}">${t}</div>`;b.scrollTop=9999;}
+function showErr(t){const e=document.getElementById('err');e.style.display='block';e.innerHTML=t;setTimeout(()=>e.style.display='none',5000);}
+function rnd(){return Math.floor(100000+Math.random()*900000).toString();}
+async function initMedia(){
+  try{
+    localStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:640}},audio:true});
+    document.getElementById('localVideo').srcObject=localStream;
+    localStream.getAudioTracks()[0].enabled=false;micOn=false;
+    camOn=true;updateBtns();
+    log('> Camera ON, Mic OFF','sys');
+  }catch(e){log('> Camera blocked - HOST ON https://','sys');showErr('⚠️ Camera blocked. You opened via content://<br>Upload to GitHub Pages https://');}
+}
+function updateBtns(){
+  const m=document.getElementById('micBtn'), c=document.getElementById('camBtn');
+  m.className='sBtn '+(micOn?'on':'off'); m.textContent=micOn?'🎤':'🔇';
+  c.className='sBtn '+(camOn?'on':'off'); c.textContent=camOn?'📷':'🚫';
+  document.getElementById('localVideo').style.opacity=camOn?'1':'0.15';
+}
+function toggleMic(){if(!localStream)return;micOn=!micOn;localStream.getAudioTracks().forEach(t=>t.enabled=micOn);updateBtns();log(micOn?'> Mic ON':'> Mic OFF','sys');}
+function toggleCam(){if(!localStream)return;camOn=!camOn;localStream.getVideoTracks().forEach(t=>t.enabled=camOn);updateBtns();log(camOn?'> Cam ON':'> Cam OFF','sys');}
+function makePeer(code){
+  if(peer)peer.destroy();myCode=code;document.getElementById('myId').textContent=code;
+  document.getElementById('qr').innerHTML='';new QRCode(document.getElementById('qr'),{text:code,width:64,height:64});
+  peer=new Peer('NXG-TALK-'+code,{config:{iceServers:ICE.iceServers}});
+  peer.on('open',()=>{document.getElementById('dot').classList.add('on');document.getElementById('stat').textContent='LIVE '+code;log('> Your code LIVE: '+code,'sys');});
+  peer.on('connection',c=>{conn=c;setup();});
+  peer.on('call',async call=>{call.answer(localStream);call.on('stream',s=>showRemote(s,call.peer));});
+  peer.on('error',e=>{if(e.type==='unavailable-id'){showErr('Code taken, new code generated');newCode();}});
+}
+function showRemote(s,id){
+  document.getElementById('remoteVideo').srcObject=s;document.getElementById('remoteVideo').play().catch(()=>{});
+  document.getElementById('place').style.display='none';document.getElementById('rDot').classList.add('on');document.getElementById('rLabel').textContent='LIVE • '+id.replace('NXG-TALK-','');
+  log('> Video connected','sys');
+}
+function connectPeer(){
+  const t=document.getElementById('targetId').value.trim();if(t.length!=6)return alert('Enter 6 digit code');
+  if(!peer||peer.disconnected){showErr('Your peer not ready, wait 2 sec');return;}
+  log('> Calling '+t+'...','sys');
+  conn=peer.connect('NXG-TALK-'+t);setup();
+  const call=peer.call('NXG-TALK-'+t,localStream);
+  if(!call){log('> Peer offline - other phone must be LIVE with same code','sys');showErr('Peer offline: Other phone must open same link & be LIVE with code '+t);return;}
+  call.on('stream',s=>showRemote(s,t));
+  call.on('error',()=>{log('> Call failed - TURN retry','sys');});
+  setTimeout(()=>{if(document.getElementById('place').style.display!=='none'){showErr('Still offline: Keep other phone screen ON & LIVE');}},4000);
+}
+function setup(){conn.on('open',()=>log('> Connected to '+conn.peer.replace('NXG-TALK-',''),'sys'));conn.on('data',d=>log('Friend: '+d,'peer'));}
+function sendMsg(){const i=document.getElementById('chatInput');if(!i.value||!conn){showErr('Connect to peer first');return;}conn.send(i.value);log('Me: '+i.value,'me');i.value='';}
+function newCode(){makePeer(rnd());}
+initMedia().then(()=>makePeer(rnd()));
+</script>
+</body>
+</html>
